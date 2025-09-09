@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Эко-Бегун - Бесплатная браузерная игра</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            color: white;
+        }
+        
+        .instructions h2 {
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .instructions ul {
+            list-style-position: inside;
+            margin-left: 20px;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+        }
+        
+        .game-section {
+            flex: 1;
+            min-width: 500px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .leaderboard-section {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-height: 600px;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            background-color: #e6f7ff;
+            border: 4px solid #2c3e50;
+            border-radius: 10px;
+        }
+        
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .game-ui {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .score-panel {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        #start-screen, #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(41, 128, 185, 0.95);
+            color: white;
+            text-align: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        
+        #game-over {
+            display: none;
+        }
+        
+        .game-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .game-instructions {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            max-width: 80%;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            background: linear-gradient(to bottom, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(to bottom, #27ae60, #219653);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .control-btn {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            background: linear-gradient(to bottom, #e67e22, #d35400);
+        }
+        
+        .leaderboard-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+        
+        .leaderboard-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+        
+        .leaderboard-rank {
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 30px;
+        }
+        
+        .leaderboard-name {
+            font-weight: bold;
+            flex-grow: 1;
+            margin: 0 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .leaderboard-score {
+            color: #e74c3c;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: right;
+        }
+        
+        .current-player {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-radius: 5px;
+        }
+        
+        .player-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .player-input {
+            padding: 12px 20px;
+            font-size: 1rem;
+            border: 2px solid #3498db;
+            border-radius: 25px;
+            margin-bottom: 15px;
+            text-align: center;
+            width: 250px;
+        }
+        
+        .deploy-info {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .deploy-info h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .deploy-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .step {
+            flex: 1;
+            min-width: 250px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .step h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: white;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 1000px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .game-section, .leaderboard-section {
+                min-width: 100%;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .game-section {
+                padding: 15px;
+            }
+            
+            #game-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Эко-Бегун</h1>
+            <p class="subtitle">Собирай мусор и устанавливай рекорды!</p>
+        </header>
+        
+        <div class="instructions">
+            <h2>Как играть?</h2>
+            <ul>
+                <li>Нажимай ПРОБЕЛ, чтобы перепрыгивать через мешки с мусором</li>
+                <li>Собирай жестяные банки для получения дополнительных очков</li>
+                <li>Каждая банка дает +5 очков</li>
+                <li>Уворачивайся от мешков с мусором</li>
+                <li>Набирай как можно больше очков!</li>
+            </ul>
+        </div>
+        
+        <div class="content">
+            <section class="game-section">
+                <h2>Игра</h2>
+                <div id="game-container">
+                    <canvas id="game-canvas" width="800" height="400"></canvas>
+                    
+                    <div class="game-ui">
+                        <div class="score-panel" id="score">Счет: 0</div>
+                        <div class="score-panel" id="cans">Банки: 0</div>
+                    </div>
+                    
+                    <div id="start-screen">
+                        <h2 class="game-title">Эко-Бегун</h2>
+                        <p>Собирай жестяные банки и избегай мешков с мусором!</p>
+                        
+                        <div class="game-instructions">
+                            <p>ПРОБЕЛ - прыжок</p>
+                            <p>R - перезапуск игры</p>
+                        </div>
+                        
+                        <div class="player-form">
+                            <input type="text" class="player-input" id="player-input" placeholder="Введите ваше имя" maxlength="15">
+                            <button class="btn" id="start-button">Начать игру</button>
+                        </div>
+                    </div>
+                    
+                    <div id="game-over">
+                        <h2 class="game-title">Игра окончена!</h2>
+                        <p>Игрок: <span id="final-player">Гость</span></p>
+                        <p>Вы набрали: <span id="final-score">0</span> очков</p>
+                        <p>Собрано банок: <span id="final-cans">0</span></p>
+                        <p>Ваш рекорд: <span id="best-score">0</span> очков</p>
+                        
+                        <div class="controls">
+                            <button class="btn" id="restart-button">Играть снова</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="leaderboard-section">
+                <h2>Таблица лидеров</h2>
+                <ul class="leaderboard-list" id="leaderboard-list">
+                    <!-- Лидеры будут добавлены через JavaScript -->
+                </ul>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <p>Собери больше всех банок и попади в таблицу лидеров!</p>
+                    <p style="font-size: 0.9rem; margin-top: 10px; color: #7f8c8d;">
+                        * Для сохранения результатов разрешите использование localStorage
+                    </p>
+                </div>
+            </section>
+        </div>
+        
+        <div class="deploy-info">
+            <h2>Как разместить эту игру бесплатно?</h2>
+            <div class="deploy-steps">
+                <div class="step">
+                    <h3>1. GitHub Pages</h3>
+                    <p>Создайте аккаунт на GitHub, создайте репозиторий, загрузите этот HTML-файл как index.html и активируйте GitHub Pages в настройках.</p>
+                </div>
+                <div class="step">
+                    <h3>2. Netlify</h3>
+                    <p>Зарегистрируйтесь на Netlify и перетащите папку с файлом игры в область загрузки. Получите бесплатный домен.</p>
+                </div>
+                <div class="step">
+                    <h3>3. Vercel</h3>
+                    <p>Создайте аккаунт на Vercel, загрузите файл через интерфейс или подключите GitHub для автоматического развертывания.</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 Эко-Бегун | Игра в защиту окружающей среды</p>
+        </footer>
+    </div>
+
+    <script>
+        // Получаем элементы
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const cansElement = document.getElementById('cans');
+        const finalScoreElement = document.getElementById('final-score');
+        const finalCansElement = document.getElementById('final-cans');
+        const bestScoreElement = document.getElementById('best-score');
+        const finalPlayerElement = document.getElementById('final-player');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const playerInput = document.getElementById('player-input');
+        const leaderboardList = document.getElementById('leaderboard-list');
+        
+        // Игровые переменные
+        let gameSpeed = 5;
+        let score = 0;
+        let cansCollected = 0;
+        let playerName = "Гость";
+        let playerBestScore = 0;
+        let gameOver = false;
+        let gameStarted = false;
+        let animationId;
+        let frameCount = 0;
+        let lastScoreTime = 0;
+        
+        // Загрузка рекорда игрока
+        function loadPlayerScore() {
+            const savedName = localStorage.getItem('playerName');
+            if (savedName) {
+                playerInput.value = savedName;
+                playerName = savedName;
+            }
+            
+            const savedScore = localStorage.getItem(`${playerName}_bestScore`);
+            playerBestScore = savedScore ? parseInt(savedScore) : 0;
+        }
+        
+        // Сохранение рекорда игрока
+        function savePlayerScore() {
+            if (score > playerBestScore) {
+                playerBestScore = score;
+                localStorage.setItem(`${playerName}_bestScore`, playerBestScore);
+                localStorage.setItem('playerName', playerName);
+                
+                // Обновляем таблицу лидеров
+                updateLeaderboard();
+            }
+        }
+        
+        // Обновление таблицы лидеров
+        function updateLeaderboard() {
+            // Получаем всех игроков из localStorage
+            const players = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.endsWith('_bestScore')) {
+                    const playerName = key.replace('_bestScore', '');
+                    const score = parseInt(localStorage.getItem(key));
+                    players.push({ name: playerName, score: score });
+                }
+            }
+            
+            // Сортируем игроков по убыванию счета
+            players.sort((a, b) => b.score - a.score);
+            
+            // Берем топ-5 игроков
+            const topPlayers = players.slice(0, 5);
+            
+            // Очищаем список лидеров
+            leaderboardList.innerHTML = '';
+            
+            // Заполняем таблицу лидеров
+            if (topPlayers.length === 0) {
+                const emptyMessage = document.createElement('li');
+                emptyMessage.textContent = 'Пока нет рекордов';
+                emptyMessage.style.textAlign = 'center';
+                emptyMessage.style.padding = '20px';
+                emptyMessage.style.color = '#7f8c8d';
+                leaderboardList.appendChild(emptyMessage);
+            } else {
+                topPlayers.forEach((player, index) => {
+                    const item = document.createElement('li');
+                    item.className = `leaderboard-item ${player.name === playerName ? 'current-player' : ''}`;
+                    
+                    const rankSpan = document.createElement('span');
+                    rankSpan.className = 'leaderboard-rank';
+                    rankSpan.textContent = `${index + 1}.`;
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'leaderboard-name';
+                    nameSpan.textContent = player.name;
+                    
+                    const scoreSpan = document.createElement('span');
+                    scoreSpan.className = 'leaderboard-score';
+                    scoreSpan.textContent = player.score;
+                    
+                    item.appendChild(rankSpan);
+                    item.appendChild(nameSpan);
+                    item.appendChild(scoreSpan);
+                    leaderboardList.appendChild(item);
+                });
+            }
+        }
+        
+        // Загрузка данных игрока при запуске
+        loadPlayerScore();
+        updateLeaderboard();
+        
+        // Персонаж (человек с пакетом мусора за спиной)
+        const player = {
+            x: 50,
+            y: 280,
+            width: 40,
+            height: 60,
+            jumping: false,
+            jumpHeight: 275,
+            jumpSpeed: 10,
+            gravity: 0.5,
+            velocity: 0,
+            
+            draw() {
+                // Ноги
+                ctx.fillStyle = '#2c3e50';
+                ctx.fillRect(this.x - 5, this.y + this.height, 15, 10);
+                ctx.fillRect(this.x + this.width - 10, this.y + this.height, 15, 10);
+                
+                // Тело
+                ctx.fillStyle = '#3498db';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                
+                // Руки
+                ctx.fillStyle = '#2980b9';
+                ctx.fillRect(this.x - 10, this.y + 10, 10, 30);
+                ctx.fillRect(this.x + this.width, this.y + 10, 10, 30);
+                
+                // Голова
+                ctx.fillStyle = '#ffcc99';
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y - 10, 15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Черты лица
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2 - 5, this.y - 15, 2, 0, Math.PI * 2);
+                ctx.arc(this.x + this.width / 2 + 5, this.y - 15, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y - 5, 5, 0, Math.PI);
+                ctx.stroke();
+                
+                // Пакет с мусором за спиной
+                ctx.fillStyle = '#e74c3c';
+                ctx.beginPath();
+                ctx.moveTo(this.x - 15, this.y + 15);
+                ctx.lineTo(this.x - 5, this.y - 10);
+                ctx.lineTo(this.x + 10, this.y - 5);
+                ctx.lineTo(this.x + 5, this.y + 40);
+                ctx.closePath();
+                ctx.fill();
+            },
+            
+            jump() {
+                if (!this.jumping) {
+                    this.jumping = true;
+                    this.velocity = -this.jumpSpeed;
+                }
+            },
+            
+            update() {
+                if (this.jumping) {
+                    this.y += this.velocity;
+                    this.velocity += this.gravity;
+                    
+                    if (this.y >= 280) {
+                        this.y = 280;
+                        this.jumping = false;
+                        this.velocity = 0;
+                    }
+                }
+            }
+        };
+        
+        // Препятствия (мешки с мусором)
+        class TrashBag {
+            constructor() {
+                this.width = 30;
+                this.height = 40;
+                this.x = canvas.width;
+                this.y = 300;
+                this.speed = gameSpeed;
+                
+                const colors = ['#2ecc71', '#e74c3c', '#f1c40f', '#9b59b6'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y + 10);
+                ctx.lineTo(this.x + this.width, this.y + 10);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y + 20);
+                ctx.lineTo(this.x + this.width, this.y + 20);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y + 30);
+                ctx.lineTo(this.x + this.width, this.y + 30);
+                ctx.stroke();
+            }
+            
+            update() {
+                this.x -= this.speed;
+            }
+        }
+        
+        // Жестяные банки для сбора
+        class Can {
+            constructor() {
+                this.width = 15;
+                this.height = 20;
+                this.x = canvas.width;
+                this.y = 310;
+                this.speed = gameSpeed;
+                this.collected = false;
+            }
+            
+            draw() {
+                if (this.collected) return;
+                
+                ctx.fillStyle = '#d35400';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width/2, this.y + this.height/2, this.width/2, this.height/2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#f39c12';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width/2, this.y + 3, this.width/2 - 2, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width/2, this.y + this.height - 3, this.width/2 - 2, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            update() {
+                this.x -= this.speed;
+                this.speed = gameSpeed;
+            }
+        }
+        
+        let obstacles = [];
+        let cans = [];
+        let obstacleTimer = 0;
+        let canTimer = 0;
+        let obstacleInterval = 100;
+        let canInterval = 70;
+        
+        // Земля
+        const ground = {
+            y: 340,
+            height: 60,
+            
+            draw() {
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(0, this.y, canvas.width, this.height);
+                
+                ctx.fillStyle = '#2ecc71';
+                ctx.fillRect(0, this.y, canvas.width, 5);
+                
+                ctx.fillStyle = '#6b8c42';
+                for (let i = 0; i < canvas.width; i += 30) {
+                    ctx.fillRect(i, this.y - 2, 10, 3);
+                }
+            }
+        };
+        
+        // Облака на фоне
+        class Cloud {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = 50 + Math.random() * 100;
+                this.speed = 0.5 + Math.random() * 1.5;
+                this.size = 30 + Math.random() * 30;
+            }
+            
+            draw() {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.arc(this.x + this.size * 0.8, this.y - this.size * 0.2, this.size * 0.8, 0, Math.PI * 2);
+                ctx.arc(this.x + this.size * 1.5, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            update() {
+                this.x -= this.speed;
+                if (this.x < -this.size * 2) {
+                    this.x = canvas.width + this.size;
+                    this.y = 50 + Math.random() * 100;
+                }
+            }
+        }
+        
+        let clouds = [];
+        for (let i = 0; i < 5; i++) {
+            clouds.push(new Cloud());
+        }
+        
+        // Функция проверки столкновений
+        function checkCollision(player, obj) {
+            return player.x < obj.x + obj.width &&
+                   player.x + player.width > obj.x &&
+                   player.y < obj.y + obj.height &&
+                   player.y + player.height > obj.y;
+        }
+        
+        // Игровой цикл
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            frameCount++;
+            
+            // Начисляем 1 очко каждую секунду
+            const currentTime = Date.now();
+            if (currentTime - lastScoreTime >= 1000) {
+                score += 1;
+                lastScoreTime = currentTime;
+                scoreElement.textContent = `Счет: ${score}`;
+            }
+            
+            // Рисуем небо
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, ground.y);
+            
+            // Рисуем облака
+            clouds.forEach(cloud => {
+                cloud.update();
+                cloud.draw();
+            });
+            
+            // Рисуем землю
+            ground.draw();
+            
+            // Обновляем и рисуем игрока
+            player.update();
+            player.draw();
+            
+            // Создаем препятствия
+            obstacleTimer++;
+            if (obstacleTimer > obstacleInterval) {
+                if (Math.random() < 0.7) {
+                    obstacles.push(new TrashBag());
+                }
+                obstacleTimer = 0;
+                obstacleInterval = Math.max(60, 80 + Math.floor(Math.random() * 40));
+            }
+            
+            // Создаем банки
+            canTimer++;
+            if (canTimer > canInterval) {
+                if (Math.random() < 0.6) {
+                    cans.push(new Can());
+                }
+                canTimer = 0;
+                canInterval = Math.max(40, 50 + Math.floor(Math.random() * 40));
+            }
+            
+            // Обновляем и рисуем препятствия
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].speed = gameSpeed;
+                obstacles[i].update();
+                obstacles[i].draw();
+                
+                if (checkCollision(player, obstacles[i])) {
+                    gameOver = true;
+                }
+                
+                if (obstacles[i].x + obstacles[i].width < 0) {
+                    obstacles.splice(i, 1);
+                    i--;
+                }
+            }
+            
+            // Обновляем и рисуем банки
+            for (let i = 0; i < cans.length; i++) {
+                cans[i].update();
+                cans[i].draw();
+                
+                if (!cans[i].collected && checkCollision(player, cans[i])) {
+                    cans[i].collected = true;
+                    cansCollected++;
+                    score += 5;
+                    cansElement.textContent = `Банки: ${cansCollected}`;
+                    scoreElement.textContent = `Счет: ${score}`;
+                }
+                
+                if (cans[i].x + cans[i].width < 0 || cans[i].collected) {
+                    cans.splice(i, 1);
+                    i--;
+                }
+            }
+            
+            if (gameOver) {
+                cancelAnimationFrame(animationId);
+                savePlayerScore();
+                finalScoreElement.textContent = score;
+                finalCansElement.textContent = cansCollected;
+                bestScoreElement.textContent = playerBestScore;
+                finalPlayerElement.textContent = playerName;
+                gameOverScreen.style.display = 'flex';
+                return;
+            }
+            
+            animationId = requestAnimationFrame(gameLoop);
+        }
+        
+        // Обработчики событий
+        startButton.addEventListener('click', () => {
+            if (playerInput.value.trim() !== '') {
+                playerName = playerInput.value.trim();
+                loadPlayerScore();
+            }
+            
+            startScreen.style.display = 'none';
+            gameStarted = true;
+            resetGame();
+            gameLoop();
+        });
+        
+        restartButton.addEventListener('click', () => {
+            gameOverScreen.style.display = 'none';
+            resetGame();
+            gameLoop();
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && gameStarted && !gameOver) {
+                player.jump();
+                e.preventDefault();
+            }
+            
+            if (e.code === 'KeyR' && gameOver) {
+                gameOverScreen.style.display = 'none';
+                resetGame();
+                gameLoop();
+            }
+            
+            if (e.code === 'Enter' && !gameStarted) {
+                if (playerInput.value.trim() !== '') {
+                    playerName = playerInput.value.trim();
+                    loadPlayerScore();
+                }
+                
+                startScreen.style.display = 'none';
+                gameStarted = true;
+                resetGame();
+                gameLoop();
+            }
+        });
+        
+        // Сброс игры
+        function resetGame() {
+            score = 0;
+            cansCollected = 0;
+            gameSpeed = 5;
+            gameOver = false;
+            obstacles = [];
+            cans = [];
+            obstacleTimer = 0;
+            canTimer = 0;
+            obstacleInterval = 100;
+            canInterval = 70;
+            lastScoreTime = Date.now();
+            player.y = 280;
+            player.jumping = false;
+            player.velocity = 0;
+            scoreElement.textContent = `Счет: ${score}`;
+            cansElement.textContent = `Банки: ${cansCollected}`;
+        }
+    </script>
+</body>
+</html>
